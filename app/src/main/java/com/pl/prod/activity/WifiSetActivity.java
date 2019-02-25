@@ -101,7 +101,6 @@ public class WifiSetActivity extends BaseActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
         }
 
         @Override
