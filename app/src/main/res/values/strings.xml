@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">prod</string>
+    <drawable name="btn_login_normal">#d900a6ff</drawable>
+    <drawable name="btn_login_pressed">#d675cfff</drawable>
+    <string name="str_alert">提示</string>
+    <string name="str_ensure">确定</string>
+    <string name="str_network_error">网络错误，请检查网络</string>
+    <string name="str_network_timeout">访问超时，请刷新</string>
+
+    <string name="str_please_waitting">请稍后</string>
+    <string name="str_loading">加载中</string>
+    <string name="str_busy">忙</string>
+    <string name="str_success">成功</string>
+    <string name="str_faild">失败</string>
+    <string name="str_configure">设定</string>
+    <string name="str_ok">确认</string>
+    <string name="str_cancel">取消</string>
+    <string name="str_confirm">确定</string>
+    <string name="str_order">订单</string>
+    <string name="str_news">新闻</string>
+    <string name="str_user">用户</string>
+    <string name="str_helper">帮助</string>
+    <string name="coming_soon">敬请期待</string>
+    <string name="address">地址：</string>
+    <!--MainActivity-->
+    <string name="main_key_back">再按一次退出程序</string>
+    <string name="login_error">登录失败</string>
+    <string name="please_input_user">请输入用户名</string>
+    <string name="login_success">登录成功</string>
+
+</resources>

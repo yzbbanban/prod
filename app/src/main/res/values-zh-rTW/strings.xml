@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">prod</string>
+    <drawable name="btn_login_normal">#d900a6ff</drawable>
+    <drawable name="btn_login_pressed">#d675cfff</drawable>
+    <string name="str_alert">提醒</string>
+    <string name="str_ensure">確定</string>
+    <string name="str_network_error">網絡連線異常，請檢查網絡</string>
+    <string name="str_network_timeout">連線逾時，請重新查詢</string>
+
+    <string name="str_please_waitting">請稍後</string>
+    <string name="str_loading">加載中</string>
+    <string name="str_busy">系統忙線中，請稍後</string>
+    <string name="str_success">成功</string>
+    <string name="str_faild">失敗</string>
+    <string name="str_configure">設定</string>
+    <string name="str_ok">確定</string>
+    <string name="str_cancel">取消</string>
+    <string name="str_confirm">確認</string>
+    <string name="str_order">訂單</string>
+    <string name="str_news">新聞</string>
+    <string name="str_user">使用者</string>
+    <string name="str_helper">指引</string>
+    <string name="coming_soon">敬請期待</string>
+    <string name="address">地址：</string>
+    <!--MainActivity-->
+    <string name="main_key_back">再按一次返回,登出S</string>
+    <string name="login_error">登录失败</string>
+    <string name="please_input_user">请输入用户名</string>
+    <string name="login_success">登录成功</string>
+
+
+</resources>
+
