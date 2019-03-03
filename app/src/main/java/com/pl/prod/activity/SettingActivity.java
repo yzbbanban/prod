@@ -8,9 +8,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.pl.prod.R;
+import com.pl.prod.app.PlApplication;
 import com.pl.prod.utils.HexUtil;
 import com.pl.prod.utils.TaskCenter;
 import com.pl.prod.utils.TcpHelper;
+import com.pl.prod.utils.netty.NettyClientFilter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +22,11 @@ import java.net.Socket;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 
 public class SettingActivity extends AppCompatActivity {
 
@@ -129,15 +136,22 @@ public class SettingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_setting);
         ButterKnife.bind(this);
 
+
+        try {
+            start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         //连接
-        TaskCenter.ipAddress = "192.168.0.102";
-        TaskCenter.port = 9654;
-        TaskCenter.sharedCenter().connect("192.168.0.102", 9654);
+//        TaskCenter.ipAddress = "192.168.0.102";
+//        TaskCenter.ipAddress = "192.168.0.158";
+//        TaskCenter.port = 8080;
+//        TaskCenter.sharedCenter().connect("192.168.0.158", 8080);
 //        List<ScanResult> scanResults = WifiSupport.noSameName(WifiSupport.getWifiScanResult(this));
 //        Log.i(TAG, "onCreate: " + new Gson().toJson(scanResults));
 
@@ -157,24 +171,47 @@ public class SettingActivity extends AppCompatActivity {
         wifiMsg[2] = (byte) c;
 
 
-        TaskCenter.sharedCenter().setDisconnectedCallback(new TaskCenter.OnServerDisconnectedCallbackBlock() {
-            @Override
-            public void callback(IOException e) {
-                Log.i(TAG, "callback: " + e.getMessage());
-            }
-        });
-        TaskCenter.sharedCenter().setConnectedCallback(new TaskCenter.OnServerConnectedCallbackBlock() {
-            @Override
-            public void callback() {
-                Log.i(TAG, "connect");
-            }
-        });
-        TaskCenter.sharedCenter().setReceivedCallback(new TaskCenter.OnReceiveCallbackBlock() {
-            @Override
-            public void callback(String receicedMessage) {
-                Log.i(TAG, "receiced callback  " + receicedMessage);
-            }
-        });
+//        TaskCenter.sharedCenter().setDisconnectedCallback(new TaskCenter.OnServerDisconnectedCallbackBlock() {
+//            @Override
+//            public void callback(IOException e) {
+//                Log.i(TAG, "callback: " + e.getMessage());
+//            }
+//        });
+//        TaskCenter.sharedCenter().setConnectedCallback(new TaskCenter.OnServerConnectedCallbackBlock() {
+//            @Override
+//            public void callback() {
+//                Log.i(TAG, "connect");
+//            }
+//        });
+//        TaskCenter.sharedCenter().setReceivedCallback(new TaskCenter.OnReceiveCallbackBlock() {
+//            @Override
+//            public void callback(String receicedMessage) {
+//                Log.i(TAG, "receiced callback  " + receicedMessage);
+//            }
+//        });
+    }
+
+
+    public static String host = "192.168.0.158";  //ip地址
+    public static int port = 8080;       //端口
+    /// 通过nio方式来接收连接和处理连接
+    private static EventLoopGroup group = new NioEventLoopGroup();
+    private static Bootstrap b = new Bootstrap();
+    private static Channel ch;
+
+
+    /**
+     * Netty创建全部都是实现自AbstractBootstrap。
+     * 客户端的是Bootstrap，服务端的则是    ServerBootstrap。
+     **/
+    public void start() throws InterruptedException {
+        b.group(group);
+        b.channel(NioSocketChannel.class);
+        b.handler(new NettyClientFilter());
+        // 连接服务端
+        ch = b.connect(host, port).sync().channel();
+
+        Log.i(TAG, "main: 客户端成功启动...");
     }
 
     @OnClick(R.id.btn_connect)
@@ -184,9 +221,11 @@ public class SettingActivity extends AppCompatActivity {
 //        sendMsg("run tcp: ", tcpMsg);
 
         //发送
-        Log.i(TAG, "tcp");
-        TaskCenter.sharedCenter().send("ban".getBytes());
-
+        Log.i(TAG, "tcpMsg");
+//        TaskCenter.sharedCenter().send("ban".getBytes());
+        if (ch != null) {
+            ch.writeAndFlush(tcpMsg);
+        }
     }
 
     @OnClick(R.id.btn_connect_wifi)
@@ -194,8 +233,11 @@ public class SettingActivity extends AppCompatActivity {
 //        serIp = etIp.getText().toString();
 //        serPort = Integer.parseInt(etPort.getText().toString());
 //        sendMsg("run wifi: ", wifiMsg);
-        Log.i(TAG, "Wifi");
-        TaskCenter.sharedCenter().send(wifiMsg);
+        Log.i(TAG, "wifiMsg");
+//        TaskCenter.sharedCenter().send(wifiMsg);
+        if (ch != null) {
+            ch.writeAndFlush(wifiMsg);
+        }
     }
 
     @OnClick(R.id.btn_connect_bind)
@@ -203,8 +245,11 @@ public class SettingActivity extends AppCompatActivity {
 //        serIp = etIp.getText().toString();
 //        serPort = Integer.parseInt(etPort.getText().toString());
 //        sendMsg("run bind: ", bindMsg);
-        Log.i(TAG, "bind");//00,01,01,01,0a,65,56,6e
-        TaskCenter.sharedCenter().send(bindMsg);
+        Log.i(TAG, "bindMsg");//00,01,01,01,0a,65,56,6e
+//        TaskCenter.sharedCenter().send(bindMsg);
+        if (ch != null) {
+            ch.writeAndFlush(bindMsg);
+        }
     }
 
     @OnClick(R.id.btn_connect_close)
@@ -212,8 +257,11 @@ public class SettingActivity extends AppCompatActivity {
 //        serIp = etIp.getText().toString();
 //        serPort = Integer.parseInt(etPort.getText().toString());
 //        sendMsg("run close: ", closeMsg);
-        Log.i(TAG, "close");
-        TaskCenter.sharedCenter().send(closeMsg);
+        Log.i(TAG, "closeMsg");
+//        TaskCenter.sharedCenter().send(closeMsg);
+        if (ch != null) {
+            ch.writeAndFlush(closeMsg);
+        }
     }
 
 
@@ -277,6 +325,7 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        TaskCenter.sharedCenter().disconnect();
+        group = null;
+        ch = null;
     }
 }

@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -18,7 +17,6 @@ import android.widget.Toast;
 
 import com.pl.prod.R;
 import com.pl.prod.ui.CleanEditText;
-import com.pl.prod.utils.ToastUtil;
 import com.pl.prod.utils.WifiAutoConnectManager;
 
 import butterknife.BindView;
@@ -40,7 +38,7 @@ public class WifiSetActivity extends BaseActivity {
 
     private ConnectAsyncTask mConnectAsyncTask = null;
     private String ssid = "";
-    private WifiAutoConnectManager.WifiCipherType type = WifiAutoConnectManager.WifiCipherType.WIFICIPHER_NOPASS;
+    private WifiAutoConnectManager.WifiCipherType type = WifiAutoConnectManager.WifiCipherType.WIFICIPHER_WPA;
     private String password = "solonic.cc";
     private WifiAutoConnectManager mWifiAutoConnectManager;
 
@@ -82,7 +80,29 @@ public class WifiSetActivity extends BaseActivity {
         }
         mConnectAsyncTask = new ConnectAsyncTask(ssid, password, type);
         mConnectAsyncTask.execute();
-        finish();
+
+        Thread thread = new Thread(new MyThread());
+        thread.start();
+
+    }
+
+    class MyThread implements Runnable {
+
+        @Override
+        public void run() {
+            int i = 0;
+            while (i < 15) {
+                if (ssid.equals(WifiAutoConnectManager.getSSID())) {
+                    finish();
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                i++;
+            }
+        }
     }
 
 
@@ -96,11 +116,6 @@ public class WifiSetActivity extends BaseActivity {
             this.ssid = ssid;
             this.password = password;
             this.type = type;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
         }
 
         @Override
@@ -127,7 +142,7 @@ public class WifiSetActivity extends BaseActivity {
             if (tempConfig != null) {
                 Log.d("wifidemo", ssid + "配置过！");
                 boolean result = wifiManager.enableNetwork(tempConfig.networkId, true);
-                if (type != WifiAutoConnectManager.WifiCipherType.WIFICIPHER_NOPASS) {
+                if (type == WifiAutoConnectManager.WifiCipherType.WIFICIPHER_NOPASS) {
                     try {
                         Thread.sleep(5000);//超过5s提示失败
                         Log.d("wifidemo", ssid + "连接失败！");
@@ -158,69 +173,45 @@ public class WifiSetActivity extends BaseActivity {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }
-                Log.d("wifidemo", "result=" + result);
-                return result;
-            } else {
-                Log.d("wifidemo", ssid + "没有配置过！");
-                if (type != WifiAutoConnectManager.WifiCipherType.WIFICIPHER_NOPASS) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            final EditText inputServer = new EditText(WifiSetActivity.this);
-                            new AlertDialog.Builder(WifiSetActivity.this)
-                                    .setTitle("请输入密码")
-                                    .setView(inputServer)
-                                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.dismiss();
-                                        }
-                                    })
-                                    .setPositiveButton("连接", new DialogInterface.OnClickListener() {
+                    Log.d("wifidemo", "result=" + result);
+                    return result;
+                } else {
+                    Log.d("wifidemo", ssid + "没有配置过！");
+                    if (type == WifiAutoConnectManager.WifiCipherType.WIFICIPHER_WPA) {
+                        WifiConfiguration wifiConfig = mWifiAutoConnectManager.createWifiInfo(ssid, password,
+                                type);
+                        if (wifiConfig == null) {
+                            Log.d("wifidemo", "wifiConfig is null!");
+                            return null;
+                        }
+                        Log.d("wifidemo", wifiConfig.SSID);
 
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            password = inputServer.getText().toString();
-                                            new Thread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    WifiConfiguration wifiConfig = mWifiAutoConnectManager.createWifiInfo(ssid, password,
-                                                            type);
-                                                    if (wifiConfig == null) {
-                                                        Log.d("wifidemo", "wifiConfig is null!");
-                                                        return;
-                                                    }
-                                                    Log.d("wifidemo", wifiConfig.SSID);
-
-                                                    int netID = wifiManager.addNetwork(wifiConfig);
-                                                    boolean enabled = wifiManager.enableNetwork(netID, true);
-                                                    Log.d("wifidemo", "enableNetwork status enable=" + enabled);
+                        int netID = wifiManager.addNetwork(wifiConfig);
+                        boolean enabled = wifiManager.enableNetwork(netID, true);
+                        Log.d("wifidemo", "enableNetwork status enable=" + enabled);
 //                                                    Log.d("wifidemo", "enableNetwork connected=" + mWifiAutoConnectManager.wifiManager.reconnect());
 //                                                    mWifiAutoConnectManager.wifiManager.reconnect();
-                                                }
-                                            }).start();
-                                        }
-                                    }).show();
+                    } else {
+                        WifiConfiguration wifiConfig = mWifiAutoConnectManager.createWifiInfo(ssid, password, type);
+                        if (wifiConfig == null) {
+                            Log.d("wifidemo", "wifiConfig is null!");
+                            return false;
                         }
-                    });
-                } else {
-                    WifiConfiguration wifiConfig = mWifiAutoConnectManager.createWifiInfo(ssid, password, type);
-                    if (wifiConfig == null) {
-                        Log.d("wifidemo", "wifiConfig is null!");
-                        return false;
-                    }
-                    Log.d("wifidemo", wifiConfig.SSID);
-                    int netID = wifiManager.addNetwork(wifiConfig);
-                    boolean enabled = wifiManager.enableNetwork(netID, true);
-                    Log.d("wifidemo", "enableNetwork status enable=" + enabled);
+                        Log.d("wifidemo", wifiConfig.SSID);
+                        int netID = wifiManager.addNetwork(wifiConfig);
+                        boolean enabled = wifiManager.enableNetwork(netID, true);
+                        Log.d("wifidemo", "enableNetwork status enable=" + enabled);
 //                    Log.d("wifidemo", "enableNetwork connected=" + mWifiAutoConnectManager.wifiManager.reconnect());
 //                    return mWifiAutoConnectManager.wifiManager.reconnect();
-                    return enabled;
-                }
-                return false;
+                        return enabled;
+                    }
+                    return false;
 
+
+                }
 
             }
+            return false;
         }
 
         @Override

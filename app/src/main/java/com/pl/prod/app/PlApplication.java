@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.os.Vibrator;
+import android.support.multidex.MultiDex;
 
 import com.pl.prod.consts.IpServerUrls;
 import com.pl.prod.entity.User;
@@ -14,6 +15,7 @@ import org.litepal.LitePalApplication;
 
 import java.util.LinkedList;
 import java.util.List;
+
 
 /**
  * Created by brander on 2017/9/21.
@@ -27,8 +29,8 @@ public class PlApplication extends LitePalApplication {
     public static boolean isUserEdit = true;//是否已设置过用户信息
     public static String url = "";
     //测试版本
-    public static String BASE_IP_URL = "http://192.168.0.151:9090/";
-    public static String BASE_SERVER_URL = "http://192.168.0.151:9095/";
+    public static String BASE_IP_URL = "http://39.108.103.128/";
+    public static String BASE_SERVER_URL = "http://39.108.103.128:9095/";
     public static IpServerUrls urls;
     public static User user = new User();//用户数据全局单例保存
 
@@ -49,6 +51,8 @@ public class PlApplication extends LitePalApplication {
         app = this;
         mVibrator = (Vibrator) getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
         ZXingLibrary.initDisplayOpinion(this);
+//        echoClient = new EchoClient("127.0.0.1", 65535); // 连接127.0.0.1/65535，并启动
+        MultiDex.install(this);
     }
 
 

@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 
 import com.pl.prod.R;
 
+import com.pl.prod.adapter.BaseRecyclerViewAdapter;
 import com.pl.prod.adapter.WifiListAdapter;
 import com.pl.prod.consts.AppContants;
 
@@ -85,9 +86,9 @@ public class WifiActivity extends BaseActivity {
     @Override
     protected void initListener() {
 
-        adapter.buttonSetOnclick(new WifiListAdapter.ButtonInterface() {
+        adapter.setOnItemClickListener(new BaseRecyclerViewAdapter.OnItemClickListener() {
             @Override
-            public void onclick(View view, int position) {
+            public void onItemClick(View view, int position) {
                 Intent intent = new Intent(WifiActivity.this, WifiSetActivity.class);
                 intent.putExtra("wifiName", list.get(position).getWifiName());
                 startActivity(intent);

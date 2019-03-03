@@ -21,31 +21,37 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 public class RetrofitUtils {
     public static Retrofit getRetrofit(String url) {
 
+        try {
+            OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+            httpClient.addInterceptor(new Interceptor() {
+                @Override
+                public Response intercept(Interceptor.Chain chain) throws IOException {
+                    Request original = chain.request();
 
-        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-        httpClient.addInterceptor(new Interceptor() {
-            @Override
-            public Response intercept(Interceptor.Chain chain) throws IOException {
-                Request original = chain.request();
+                    Request request = original.newBuilder()
+                            .header("deviceId", SystemUtils.getIMEI(PlApplication.app))
+                            .method(original.method(), original.body())
+                            .build();
 
-                Request request = original.newBuilder()
-                        .header("deviceId", SystemUtils.getIMEI(PlApplication.app))
-                        .method(original.method(), original.body())
-                        .build();
+                    return chain.proceed(request);
+                }
 
-                return chain.proceed(request);
-            }
-
-        });
-        OkHttpClient client = httpClient.build();
-        Retrofit retrofit = new Retrofit.Builder()
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())//rxJava
+            });
+            OkHttpClient client = httpClient.build();
+            Retrofit retrofit = new Retrofit.Builder()
+                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create())//rxJava
 //                .addConverterFactory(GsonConverterFactory.create())
 //                .addConverterFactory(SimpleXmlConverterFactory.create())
-                .baseUrl(url)
-                .client(client)
-                .build();
-        return retrofit;
+                    .baseUrl(url)
+                    .client(client)
+                    .build();
+            return retrofit;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+
     }
 
 
