@@ -46,6 +46,24 @@
         android:layout_height="wrap_content"
         android:text="断开连接" />
 
+    <Button
+        android:id="@+id/btn_photo_open_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开启/关闭拍照" />
+
+    <Button
+        android:id="@+id/btn_read_photo_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="读取自动拍照状态" />
+
+    <Button
+        android:id="@+id/btn_read_tvoc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="读取 TVOC 值" />
+
 
     <TextView
         android:id="@+id/tv_message"

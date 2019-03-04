@@ -8,11 +8,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.pl.prod.R;
-import com.pl.prod.app.PlApplication;
 import com.pl.prod.utils.HexUtil;
-import com.pl.prod.utils.TaskCenter;
 import com.pl.prod.utils.TcpHelper;
 import com.pl.prod.utils.netty.NettyClientFilter;
+import com.pl.prod.utils.netty.NettyClientHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +22,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -48,6 +49,12 @@ public class SettingActivity extends AppCompatActivity {
     Button btnConnectBind;
     @BindView(R.id.btn_connect_close)
     Button btnConnectClose;
+    @BindView(R.id.btn_photo_open_close)
+    Button btnPhotoOpenClose;
+    @BindView(R.id.btn_read_photo_status)
+    Button btnReadPhotoStatus;
+    @BindView(R.id.btn_read_tvoc)
+    Button btnReadTvoc;
 
     private TcpHelper tcpHelper;
     private String serIp;
@@ -61,16 +68,16 @@ public class SettingActivity extends AppCompatActivity {
             (byte) 0x00,
             (byte) 0x04,
             //B区消息
-            (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x12,
-            //地址  192.168.0.160
-            (byte) 0x31, (byte) 0x39, (byte) 0x32, (byte) 0x2E,
-            (byte) 0x31, (byte) 0x36, (byte) 0x38, (byte) 0x2E,
-            (byte) 0x30, (byte) 0x2,
-            (byte) 0x31, (byte) 0x36, (byte) 0x30,
+            (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x10,
+            //地址  192.168.0.160    172.20.10.2
+            (byte) 0x31, (byte) 0x37, (byte) 0x32, (byte) 0x2E,
+            (byte) 0x32, (byte) 0x30, (byte) 0x2E,
+            (byte) 0x31, (byte) 0x30, (byte) 0x2E,
+            (byte) 0x32,
             //空字符
             (byte) 0x00,
-            //端口 9654 9090
-            (byte) 0x39, (byte) 0x36, (byte) 0x35, (byte) 0x34
+            //端口  8080
+            (byte) 0x38, (byte) 0x30, (byte) 0x38, (byte) 0x30
     };
 
     //wifi发送 Tenda_2644B0
@@ -80,21 +87,23 @@ public class SettingActivity extends AppCompatActivity {
             (byte) 0x00,
             (byte) 0x05,
             //B区消息
-            (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x12,
+            (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x0C,
             //SSID   Tenda_2644B0  TP-LINK_3836 ban
-            (byte) 0x74, (byte) 0x70, (byte) 0x2, (byte) 0x6C, (byte) 0x69, (byte) 0x6E, (byte) 0x6,
-            (byte) 0x5F,
-            (byte) 0x33, (byte) 0x38, (byte) 0x33, (byte) 0x36,
+            (byte) 0x62, (byte) 0x61, (byte) 0x6E,
             //空字符
             (byte) 0x00,
-            //密码 19890804
-            (byte) 0x31, (byte) 0x39, (byte) 0x38, (byte) 0x39, (byte) 0x30, (byte) 0x38, (byte) 0x30, (byte) 0x34
+            //密码 11111111
+            (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31
     };
 
 //    //SSID   Tenda_2644B0  TP-LINK_3836 ban
 //            (byte) 0x54, (byte) 0x65, (byte) 0x6E, (byte) 0x64, (byte) 0x61,
 //            (byte) 0x5F,
 //            (byte) 0x32, (byte) 0x36, (byte) 0x34, (byte) 0x34, (byte) 0x42, (byte) 0x30,
+
+//            (byte) 0x74, (byte) 0x70, (byte) 0x2, (byte) 0x6C, (byte) 0x69, (byte) 0x6E, (byte) 0x6,
+//            (byte) 0x5F,
+//            (byte) 0x33, (byte) 0x38, (byte) 0x33, (byte) 0x36,
 //            //空字符
 //            (byte) 0x00,
 //            //密码 19910516
@@ -192,8 +201,8 @@ public class SettingActivity extends AppCompatActivity {
     }
 
 
-    public static String host = "192.168.0.158";  //ip地址
-    public static int port = 8080;       //端口
+    public static String host = "192.168.6.6";  //ip地址
+    public static int port = 6636;       //端口
     /// 通过nio方式来接收连接和处理连接
     private static EventLoopGroup group = new NioEventLoopGroup();
     private static Bootstrap b = new Bootstrap();
@@ -205,6 +214,10 @@ public class SettingActivity extends AppCompatActivity {
      * 客户端的是Bootstrap，服务端的则是    ServerBootstrap。
      **/
     public void start() throws InterruptedException {
+        if (group == null) {
+            group = new NioEventLoopGroup();
+            b = new Bootstrap();
+        }
         b.group(group);
         b.channel(NioSocketChannel.class);
         b.handler(new NettyClientFilter());
@@ -212,6 +225,27 @@ public class SettingActivity extends AppCompatActivity {
         ch = b.connect(host, port).sync().channel();
 
         Log.i(TAG, "main: 客户端成功启动...");
+    }
+
+
+    @OnClick(R.id.btn_photo_open_close)
+    public void btnPhotoOpenClose() {
+
+
+    }
+
+
+    @OnClick(R.id.btn_read_photo_status)
+    public void btnReadPhotoStatus() {
+
+
+    }
+
+
+    @OnClick(R.id.btn_read_tvoc)
+    public void btnReadTvoc() {
+
+
     }
 
     @OnClick(R.id.btn_connect)
@@ -222,9 +256,14 @@ public class SettingActivity extends AppCompatActivity {
 
         //发送
         Log.i(TAG, "tcpMsg");
+
 //        TaskCenter.sharedCenter().send("ban".getBytes());
         if (ch != null) {
-            ch.writeAndFlush(tcpMsg);
+            Log.i(TAG, "发送tcpMsg" + NettyClientHandler.toHexString(tcpMsg));
+
+            ByteBuf byteBuf = Unpooled.buffer();
+            byteBuf.writeBytes(tcpMsg);
+            ch.writeAndFlush(byteBuf);
         }
     }
 
@@ -236,7 +275,10 @@ public class SettingActivity extends AppCompatActivity {
         Log.i(TAG, "wifiMsg");
 //        TaskCenter.sharedCenter().send(wifiMsg);
         if (ch != null) {
-            ch.writeAndFlush(wifiMsg);
+            Log.i(TAG, "发送 wifiMsg" + NettyClientHandler.toHexString(wifiMsg));
+            ByteBuf byteBuf = Unpooled.buffer();
+            byteBuf.writeBytes(wifiMsg);
+            ch.writeAndFlush(byteBuf);
         }
     }
 
@@ -248,7 +290,9 @@ public class SettingActivity extends AppCompatActivity {
         Log.i(TAG, "bindMsg");//00,01,01,01,0a,65,56,6e
 //        TaskCenter.sharedCenter().send(bindMsg);
         if (ch != null) {
-            ch.writeAndFlush(bindMsg);
+            ByteBuf byteBuf = Unpooled.buffer();
+            byteBuf.writeBytes(bindMsg);
+            ch.writeAndFlush(byteBuf);
         }
     }
 
@@ -260,7 +304,10 @@ public class SettingActivity extends AppCompatActivity {
         Log.i(TAG, "closeMsg");
 //        TaskCenter.sharedCenter().send(closeMsg);
         if (ch != null) {
-            ch.writeAndFlush(closeMsg);
+            Log.i(TAG, "发送 closeMsg");
+            ByteBuf byteBuf = Unpooled.buffer();
+            byteBuf.writeBytes(closeMsg);
+            ch.writeAndFlush(byteBuf);
         }
     }
 
