@@ -128,18 +128,19 @@
         android:padding="2dp">
 
         <TextView
+            android:id="@+id/tv_wifi_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="8"
             android:text="wifi 名称" />
 
         <Button
-            android:id="@+id/btn_set_wifi"
+            android:id="@+id/btn_select_wifi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@drawable/selector_btn"
-            android:text="设置 wifi"
+            android:text="选择 wifi"
             android:textColor="@color/colorWhite" />
 
     </LinearLayout>
@@ -149,6 +150,15 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/x20"
         android:padding="5dp">
+
+        <Button
+            android:id="@+id/btn_set_wifi"
+            android:layout_width="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/selector_btn"
+            android:text="设置 wifi"
+            android:textColor="@color/colorWhite" />
 
         <Button
             android:id="@+id/btn_bind"

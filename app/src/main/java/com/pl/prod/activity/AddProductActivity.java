@@ -1,27 +1,23 @@
 package com.pl.prod.activity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pl.prod.R;
+import com.pl.prod.app.PlApplication;
 import com.pl.prod.ui.CleanEditText;
 import com.pl.prod.utils.HexUtil;
-import com.pl.prod.utils.ToastUtil;
 import com.pl.prod.utils.WifiAutoConnectManager;
 import com.pl.prod.utils.netty.NettyClientFilter;
 import com.pl.prod.utils.netty.NettyClientHandler;
-import com.uuzuche.lib_zxing.activity.CodeUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -33,8 +29,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-
-import static com.pl.prod.utils.WifiAutoConnectManager.wifiManager;
 
 public class AddProductActivity extends BaseActivity {
 
@@ -54,6 +48,10 @@ public class AddProductActivity extends BaseActivity {
     Button btnConnectWifi;
     @BindView(R.id.btn_close)
     Button btnClose;
+    @BindView(R.id.tv_wifi_name)
+    TextView tvWifiName;
+    @BindView(R.id.btn_select_wifi)
+    Button btnSelectWifi;
 //    @BindView(R.id.btn_scan)
 //    Button btnScan;
 
@@ -76,39 +74,43 @@ public class AddProductActivity extends BaseActivity {
 
 
     //tcp 信息
-    public byte[] tcpMsg = new byte[]{
-            //A区头部
-            (byte) 0xFF, (byte) 0x00,
-            (byte) 0x00,
-            (byte) 0x04,
-            //B区消息
-            (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x10,
-            //地址  192.168.0.160    172.20.10.2
-            (byte) 0x31, (byte) 0x37, (byte) 0x32, (byte) 0x2E,
-            (byte) 0x32, (byte) 0x30, (byte) 0x2E,
-            (byte) 0x31, (byte) 0x30, (byte) 0x2E,
-            (byte) 0x32,
-            //空字符
-            (byte) 0x00,
-            //端口  8080
-            (byte) 0x38, (byte) 0x30, (byte) 0x38, (byte) 0x30
-    };
+    public byte[] tcpMsg;
+//            = new byte[]{
+//            //A区头部
+//            (byte) 0xFF, (byte) 0x00,
+//            (byte) 0x00,
+//            (byte) 0x04,
+//            //B区消息
+//            (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x10,
+//            //地址  192.168.0.160    172.20.10.2
+//            (byte) 0x31, (byte) 0x37, (byte) 0x32, (byte) 0x2E,
+//            (byte) 0x32, (byte) 0x30, (byte) 0x2E,
+//            (byte) 0x31, (byte) 0x30, (byte) 0x2E,
+//            (byte) 0x32,
+//            //空字符
+//            (byte) 0x00,
+//            //端口  9995
+//            (byte) 0x39, (byte) 0x39, (byte) 0x39, (byte) 0x35
+//               ff 00 00 04 00 01 00 01 00 19 33 39 2e 31 30 38 2e 31 30 33 2e 31 32 38 00 39 39 39 35
+//    };
 
     //wifi发送 Tenda_2644B0
-    public byte[] wifiMsg = new byte[]{
-            //A区头部
-            (byte) 0xFF, (byte) 0x00,
-            (byte) 0x00,
-            (byte) 0x05,
-            //B区消息
-            (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x0C,
-            //SSID   Tenda_2644B0  TP-LINK_3836 ban
-            (byte) 0x62, (byte) 0x61, (byte) 0x6E,
-            //空字符
-            (byte) 0x00,
-            //密码 11111111
-            (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31
-    };
+    public byte[] wifiMsg;
+//            = new byte[]{
+//            //A区头部
+//            (byte) 0xFF, (byte) 0x00,
+//            (byte) 0x00,
+//            (byte) 0x05,
+//            //B区消息
+//            (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x0C,
+//            //SSID   Tenda_2644B0  TP-LINK_3836 ban
+//            (byte) 0x62, (byte) 0x61, (byte) 0x6E,
+//            //空字符
+//            (byte) 0x00,
+//            //密码 11111111
+//            (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31
+//    };
+//          ff 00 00 05 00 01 00 01 00 0C 62 61 6E 00 31 31 31 31 31 31 31 31 31
 
     //绑定需求
     public byte[] bindMsg = new byte[]{
@@ -152,20 +154,58 @@ public class AddProductActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        Log.i(TAG, "onResume: " + PlApplication.BASE_SERVER_URL);
+        if (PlApplication.WIFI.length() != 0) {
+            tvWifiName.setText("wifi: " + PlApplication.WIFI);
+        }
+
+        try {
+            String url = PlApplication.BASE_SERVER_URL.split("//")[1];
+            String u = url.split(":")[0];
+            Log.i(TAG, "onResume: " + u);
+
+            int tcpLength = 15 + u.length();
+            int bodyLength = u.length();
+            tcpMsg = new byte[tcpLength];
+
+            for (int i = 0; i < tcpLength; i++) {
+                if (i < 9) {
+                    tcpMsg[0] = (byte) 0xFF;
+                    tcpMsg[1] = (byte) 0x00;
+                    tcpMsg[2] = (byte) 0x00;
+                    tcpMsg[3] = (byte) 0x05;
+                    tcpMsg[4] = (byte) 0x00;
+                    tcpMsg[5] = (byte) 0x01;
+                    tcpMsg[6] = (byte) 0x00;
+                    tcpMsg[7] = (byte) 0x01;
+                    tcpMsg[8] = (byte) 0x00;
+                } else if (i == 9) {
+                    Integer or = Integer.parseInt(String.valueOf(tcpLength - 10));
+                    tcpMsg[9] = or.byteValue();
+                } else if (i < 10 + bodyLength) {
+                    tcpMsg[i] = (byte) u.charAt(i - 10);
+                } else {
+                    tcpMsg[tcpLength - 5] = (byte) 0x00;
+                    tcpMsg[tcpLength - 4] = (byte) 0x39;
+                    tcpMsg[tcpLength - 3] = (byte) 0x39;
+                    tcpMsg[tcpLength - 2] = (byte) 0x39;
+                    tcpMsg[tcpLength - 1] = (byte) 0x35;
+                }
+
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         int c = 0xAA;
         for (int i = 3; i < tcpMsg.length; i++) {
             Integer or = Integer.parseInt(HexUtil.byteToHex(tcpMsg[i]), 16);
             c = c ^ or;
         }
         tcpMsg[2] = (byte) c;
-
-        c = 0xAA;
-        for (int i = 3; i < wifiMsg.length; i++) {
-            Integer or = Integer.parseInt(HexUtil.byteToHex(wifiMsg[i]), 16);
-            c = c ^ or;
-        }
-
-        wifiMsg[2] = (byte) c;
 
 
     }
@@ -208,19 +248,63 @@ public class AddProductActivity extends BaseActivity {
     @OnClick(R.id.btn_set_wifi)
     public void setWifi() {
 
-//        Intent intent = new Intent(AddProductActivity.this, WifiActivity.class);
-//        Product product = list.get(position);
-//        intent.putExtra("product", product);
-//        startActivity(intent);
+        String u1 = PlApplication.WIFI;
+        String s = PlApplication.WIFI_SECRET;
+        tvWifiName.setText("wifi: " + u1);
+
+        int wifiLength = 11 + u1.length() + s.length();
+        wifiMsg = new byte[wifiLength];
+
+        for (int i = 0; i < wifiLength; i++) {
+            if (i < 9) {
+                wifiMsg[0] = (byte) 0xFF;
+                wifiMsg[1] = (byte) 0x00;
+                wifiMsg[2] = (byte) 0x00;
+                wifiMsg[3] = (byte) 0x05;
+                wifiMsg[4] = (byte) 0x00;
+                wifiMsg[5] = (byte) 0x01;
+                wifiMsg[6] = (byte) 0x00;
+                wifiMsg[7] = (byte) 0x01;
+                wifiMsg[8] = (byte) 0x00;
+            } else if (i == 9) {
+                Integer or = Integer.parseInt(String.valueOf(wifiLength - 10));
+                wifiMsg[9] = or.byteValue();
+            } else if (i < 10 + u1.length()) {
+                wifiMsg[i] = (byte) u1.charAt(i - 10);
+            } else if (i == u1.length() + 10) {
+                wifiMsg[i] = (byte) 0x00;
+            } else {
+                wifiMsg[i] = (byte) s.charAt(wifiLength - i - 1);
+            }
+
+        }
+
+        int c = 0xAA;
+        for (int i = 3; i < wifiMsg.length; i++) {
+            Integer or = Integer.parseInt(HexUtil.byteToHex(wifiMsg[i]), 16);
+            c = c ^ or;
+        }
+
+        wifiMsg[2] = (byte) c;
+
 
         Log.i(TAG, "wifiMsg");
-//        TaskCenter.sharedCenter().send(wifiMsg);
         if (ch != null) {
             Log.i(TAG, "发送 wifiMsg" + NettyClientHandler.toHexString(wifiMsg));
             ByteBuf byteBuf = Unpooled.buffer();
             byteBuf.writeBytes(wifiMsg);
             ch.writeAndFlush(byteBuf);
         }
+
+
+    }
+
+    @OnClick(R.id.btn_select_wifi)
+    public void selectWifi() {
+
+        Intent intent = new Intent(AddProductActivity.this, WifiActivity.class);
+        startActivityForResult(intent, REQUEST_CODE);
+
 
     }
 
@@ -252,25 +336,80 @@ public class AddProductActivity extends BaseActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_CODE) {
-            if (null != data) {
-                Bundle bundle = data.getExtras();
-                if (bundle == null) {
-                    return;
+        if (resultCode == RESULT_OK) {
+
+//            if (null != data) {
+//                Bundle bundle = data.getExtras();
+//                if (bundle == null) {
+//                    return;
+//                }
+
+//                if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_SUCCESS) {
+
+//                    String result = bundle.getString(CodeUtils.RESULT_STRING);
+//                    Toast.makeText(this, "解析结果:" + result, Toast.LENGTH_LONG).show();
+//                    etProdSsid.setText(result);
+
+
+            Log.i(TAG, "onActivityResult: " + PlApplication.WIFI + " : " + PlApplication.WIFI_SECRET);
+
+            String u1 = PlApplication.WIFI;
+            String s = PlApplication.WIFI_SECRET;
+            tvWifiName.setText("wifi: " + u1);
+
+            int wifiLength = 11 + u1.length() + s.length();
+            wifiMsg = new byte[wifiLength];
+
+            for (int i = 0; i < wifiLength; i++) {
+                if (i < 9) {
+                    wifiMsg[0] = (byte) 0xFF;
+                    wifiMsg[1] = (byte) 0x00;
+                    wifiMsg[2] = (byte) 0x00;
+                    wifiMsg[3] = (byte) 0x05;
+                    wifiMsg[4] = (byte) 0x00;
+                    wifiMsg[5] = (byte) 0x01;
+                    wifiMsg[6] = (byte) 0x00;
+                    wifiMsg[7] = (byte) 0x01;
+                    wifiMsg[8] = (byte) 0x00;
+                } else if (i == 9) {
+                    Integer or = Integer.parseInt(String.valueOf(wifiLength - 10));
+                    wifiMsg[9] = or.byteValue();
+                } else if (i < 10 + u1.length()) {
+                    wifiMsg[i] = (byte) u1.charAt(i - 10);
+                } else if (i == u1.length() + 10) {
+                    wifiMsg[i] = (byte) 0x00;
+                } else {
+                    wifiMsg[i] = (byte) s.charAt(wifiLength - i - 1);
                 }
 
-                if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_SUCCESS) {
-                    String result = bundle.getString(CodeUtils.RESULT_STRING);
-                    Toast.makeText(this, "解析结果:" + result, Toast.LENGTH_LONG).show();
-                    etProdSsid.setText(result);
-
-                } else if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_FAILED) {
-                    Toast.makeText(AddProductActivity.this, "解析二维码失败", Toast.LENGTH_LONG).show();
-                }
             }
+
+            int c = 0xAA;
+            for (int i = 3; i < wifiMsg.length; i++) {
+                Integer or = Integer.parseInt(HexUtil.byteToHex(wifiMsg[i]), 16);
+                c = c ^ or;
+            }
+
+            wifiMsg[2] = (byte) c;
+
+
+            Log.i(TAG, "wifiMsg");
+            if (ch != null) {
+                Log.i(TAG, "发送 wifiMsg" + NettyClientHandler.toHexString(wifiMsg));
+                ByteBuf byteBuf = Unpooled.buffer();
+                byteBuf.writeBytes(wifiMsg);
+                ch.writeAndFlush(byteBuf);
+            }
+
+//                } else if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_FAILED) {
+//                    Toast.makeText(AddProductActivity.this, "wifi获取失败", Toast.LENGTH_LONG).show();
+//                }
+//            }
+
+
         }
+
     }
 
 

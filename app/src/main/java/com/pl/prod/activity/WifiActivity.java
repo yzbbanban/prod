@@ -2,6 +2,7 @@ package com.pl.prod.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -17,6 +18,7 @@ import com.pl.prod.utils.CollectionUtils;
 import com.pl.prod.utils.WifiSupport;
 
 import android.net.wifi.ScanResult;
+import android.view.MenuItem;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -44,6 +46,21 @@ public class WifiActivity extends BaseActivity {
         sortScaResult();
     }
 
+    /**
+     * 设置标题栏返回键功能
+     *
+     * @param item
+     * @return
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            setResult(222);
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     public void onCreateCustomToolBar(Toolbar toolbar) {
@@ -86,14 +103,24 @@ public class WifiActivity extends BaseActivity {
     @Override
     protected void initListener() {
 
-        adapter.setOnItemClickListener(new BaseRecyclerViewAdapter.OnItemClickListener() {
+        adapter.buttonSetOnclick(new WifiListAdapter.ButtonInterface() {
             @Override
-            public void onItemClick(View view, int position) {
+            public void onclick(View view, int position) {
                 Intent intent = new Intent(WifiActivity.this, WifiSetActivity.class);
                 intent.putExtra("wifiName", list.get(position).getWifiName());
-                startActivity(intent);
-            }
-        });
+                startActivityForResult(intent, 0);
 
+            }
+
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == RESULT_OK) {
+            setResult(222);
+            finish();
+        }
     }
 }
+

@@ -34,6 +34,9 @@ public class PlApplication extends LitePalApplication {
     public static IpServerUrls urls;
     public static User user = new User();//用户数据全局单例保存
 
+    public static String WIFI="";
+    public static String WIFI_SECRET="";
+
     //使用list來保存每一個activity
     private List<Activity> mList = new LinkedList<Activity>();
     //使用list來保存每一個service

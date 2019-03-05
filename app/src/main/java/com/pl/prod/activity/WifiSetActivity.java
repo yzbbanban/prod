@@ -16,7 +16,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pl.prod.R;
+import com.pl.prod.app.PlApplication;
 import com.pl.prod.ui.CleanEditText;
+import com.pl.prod.utils.ToastUtil;
 import com.pl.prod.utils.WifiAutoConnectManager;
 
 import butterknife.BindView;
@@ -71,20 +73,31 @@ public class WifiSetActivity extends BaseActivity {
 
     @OnClick(R.id.btn_wifi_set_confirm)
     public void setConfirm() {
-        if (ssid.equals(WifiAutoConnectManager.getSSID())) {
-            return;
-        }
-        if (mConnectAsyncTask != null) {
-            mConnectAsyncTask.cancel(true);
-            mConnectAsyncTask = null;
-        }
-        mConnectAsyncTask = new ConnectAsyncTask(ssid, password, type);
-        mConnectAsyncTask.execute();
 
-        Thread thread = new Thread(new MyThread());
-        thread.start();
+        PlApplication.WIFI = ssid;
+        PlApplication.WIFI_SECRET = etLoginPassword.getText().toString();
+        if (PlApplication.WIFI_SECRET == null || PlApplication.WIFI_SECRET.length() == 0) {
+            Toast.makeText(this, "请填写密码", Toast.LENGTH_SHORT).show();
+        } else {
+            setResult(333);
+            finish();
+        }
+
+//        if (ssid.equals(WifiAutoConnectManager.getSSID())) {
+//            return;
+//        }
+//        if (mConnectAsyncTask != null) {
+//            mConnectAsyncTask.cancel(true);
+//            mConnectAsyncTask = null;
+//        }
+//        mConnectAsyncTask = new ConnectAsyncTask(ssid, password, type);
+//        mConnectAsyncTask.execute();
+//
+//        Thread thread = new Thread(new MyThread());
+//        thread.start();
 
     }
+
 
     class MyThread implements Runnable {
 
