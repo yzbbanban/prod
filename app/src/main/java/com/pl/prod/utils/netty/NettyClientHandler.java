@@ -1,9 +1,14 @@
 package com.pl.prod.utils.netty;
 
 import android.util.Log;
+import android.widget.Toast;
+
+import com.pl.prod.app.PlApplication;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+
+import java.util.*;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -17,15 +22,28 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<Object> {
 
         int i = 0;
         byte[] result = new byte[20];
+        byte[] jwt = new byte[4];
 
-
+        byte[] closeMsg = new byte[]{
+                //A区头部
+                (byte) 0xFF, (byte) 0x00,
+                (byte) 0xAA,
+                (byte) 0x00
+        };
         try {
             while (in.isReadable()) {
                 byte b = in.readByte();
                 result[i] = b;
                 i++;
             }
-            System.out.println(toHexString(result));
+            Log.i(TAG, "channelRead0: " + toHexString(result));
+            if (Arrays.equals(jwt, closeMsg)) {
+                Toast.makeText(PlApplication.app, "成功", Toast.LENGTH_SHORT).show();
+            } else {
+                //上传到服务器中
+                Log.i(TAG, "channelRead0 else: " + toHexString(result));
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();

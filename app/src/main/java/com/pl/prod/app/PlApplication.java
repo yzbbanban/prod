@@ -51,7 +51,6 @@ public class PlApplication extends LitePalApplication {
         app = this;
         mVibrator = (Vibrator) getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
         ZXingLibrary.initDisplayOpinion(this);
-//        echoClient = new EchoClient("127.0.0.1", 65535); // 连接127.0.0.1/65535，并启动
         MultiDex.install(this);
     }
 
