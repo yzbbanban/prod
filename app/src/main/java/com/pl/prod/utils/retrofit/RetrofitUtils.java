@@ -29,7 +29,7 @@ public class RetrofitUtils {
                     Request original = chain.request();
 
                     Request request = original.newBuilder()
-                            .header("deviceId", SystemUtils.getIMEI(PlApplication.app))
+                            .header("deviceId", SystemUtils.getUniquePsuedoID())
                             .method(original.method(), original.body())
                             .build();
 

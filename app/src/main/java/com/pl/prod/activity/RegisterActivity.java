@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.pl.prod.R;
 import com.pl.prod.app.PlApplication;
@@ -70,7 +71,7 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCont
         SmsMessage sms = new SmsMessage();
         String mobile = etRegisterUsername.getText().toString();
         if (mobile.length() == 0) {
-            ToastUtil.showShortToast("请输入手机号码");
+            Toast.makeText(this, "请输入手机号码", Toast.LENGTH_SHORT).show();
         } else {
             sms.setPhoneNumber(mobile);
             sms.setCountryCode("86");
@@ -102,19 +103,19 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCont
         String password = etRegisterPassword.getText().toString();
         String confirmPassword = etRegisterPasswordConfirm.getText().toString();
         if (code.length() == 0) {
-            ToastUtil.showShortToast("请输入验证码");
+            ToastUtil.ToastShow("请输入验证码");
             return;
         }
         if (mobile.length() == 0) {
-            ToastUtil.showShortToast("请输入验证码");
+            ToastUtil.ToastShow("请输入手机号");
             return;
         }
         if (password.length() == 0) {
-            ToastUtil.showShortToast("请输入验证码");
+            ToastUtil.ToastShow("请输入密码");
             return;
         }
         if (!password.equals(confirmPassword)) {
-            ToastUtil.showShortToast("两次密码不一致");
+            ToastUtil.ToastShow("两次密码不一致");
             return;
         }
         userRegister.setCode(code);
@@ -140,12 +141,12 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCont
 
     @Override
     public void showDescription(String description) {
-        ToastUtil.showShortToast(description);
+        ToastUtil.ToastShow(description);
     }
 
     @Override
     public void showError(String error) {
-        ToastUtil.showShortToast(error);
+        ToastUtil.ToastShow(error);
     }
 
 

@@ -57,11 +57,11 @@ public class ForgetPwdActivity extends BaseActivity implements ISmsContract.View
             String username = etForgetUsername.getText().toString();
             String pwd = etForgetPassword.getText().toString();
             if (pwd.length() == 0) {
-                ToastUtil.showShortToast("请填写密码");
+                ToastUtil.ToastShow("请填写密码");
                 return;
             }
             if (username.length() == 0) {
-                ToastUtil.showShortToast("请填写账户");
+                ToastUtil.ToastShow("请填写账户");
                 return;
             }
             userModify.setCode(code);
@@ -76,7 +76,7 @@ public class ForgetPwdActivity extends BaseActivity implements ISmsContract.View
 
 
         } else {
-            ToastUtil.showShortToast("请输入验证码");
+            ToastUtil.ToastShow("请输入验证码");
         }
     }
 
@@ -85,7 +85,7 @@ public class ForgetPwdActivity extends BaseActivity implements ISmsContract.View
         SmsMessage sms = new SmsMessage();
         String mobile = etForgetUsername.getText().toString();
         if (mobile.length() == 0) {
-            ToastUtil.showShortToast("请输入手机号");
+            ToastUtil.ToastShow("请输入手机号");
         } else {
             sms.setPhoneNumber(mobile);
             sms.setCountryCode("86");
@@ -119,17 +119,17 @@ public class ForgetPwdActivity extends BaseActivity implements ISmsContract.View
 
     @Override
     public void showDescription(String description) {
-        ToastUtil.showShortToast("发送成功");
+        ToastUtil.ToastShow("发送成功");
     }
 
     @Override
     public void showError(String error) {
-        ToastUtil.showShortToast(error);
+        ToastUtil.ToastShow(error);
     }
 
     @Override
     public void showFindPwd(String msg) {
-        ToastUtil.showShortToast(msg);
+        ToastUtil.ToastShow(msg);
         finish();
     }
 

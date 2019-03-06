@@ -69,7 +69,7 @@ public class StartActivity extends AppCompatActivity implements IGetIpContract.V
         if (ip == null || "".equals(ip) || ip.length() > 0) {
             try {
                 ipTokenPresenter = new GetIpTokenPresenterImpl(this);
-                ipTokenPresenter.getIpTokenTask(SystemUtils.getIMEI(this));
+                ipTokenPresenter.getIpTokenTask(SystemUtils.getUniquePsuedoID());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -183,7 +183,7 @@ public class StartActivity extends AppCompatActivity implements IGetIpContract.V
         try {
             PlApplication.ipToken = ipToken;
             getIpPresenter = new GetIpPresenterImpl(this);
-            getIpPresenter.getIpTask(SystemUtils.getIMEI(this));
+            getIpPresenter.getIpTask(SystemUtils.getUniquePsuedoID());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -196,7 +196,7 @@ public class StartActivity extends AppCompatActivity implements IGetIpContract.V
      */
     @Override
     public void showError(String error) {
-        ToastUtil.showShortToast(error);
+        ToastUtil.ToastShow(error);
     }
 
     @Override
