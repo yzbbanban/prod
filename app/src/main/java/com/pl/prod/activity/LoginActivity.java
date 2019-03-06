@@ -186,7 +186,7 @@ public class LoginActivity extends AppCompatActivity implements ILoginContract.V
 
     @Override
     public void showError(String error) {
-        ToastUtil.ToastShow("登录错误");
+        ToastUtil.ToastShow(error);
     }
 
     @Override
