@@ -76,8 +76,8 @@ public class SettingActivity extends AppCompatActivity {
             (byte) 0x32,
             //空字符
             (byte) 0x00,
-            //端口  8080
-            (byte) 0x38, (byte) 0x30, (byte) 0x38, (byte) 0x30
+            //端口  9995
+            (byte) 0x39, (byte) 0x39, (byte) 0x39, (byte) 0x35
     };
 
     //wifi发送 Tenda_2644B0
@@ -95,6 +95,7 @@ public class SettingActivity extends AppCompatActivity {
             //密码 11111111
             (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31, (byte) 0x31
     };
+//    ff 00 c8 05 00 01 00 01 00 0a 62 61 6e 00 31 31 31 31 31 31
 
 //    //SSID   Tenda_2644B0  TP-LINK_3836 ban
 //            (byte) 0x54, (byte) 0x65, (byte) 0x6E, (byte) 0x64, (byte) 0x61,

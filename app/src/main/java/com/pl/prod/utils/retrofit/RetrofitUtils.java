@@ -2,6 +2,7 @@ package com.pl.prod.utils.retrofit;
 
 import com.pl.prod.app.PlApplication;
 import com.pl.prod.utils.SystemUtils;
+import com.pl.prod.utils.ToastUtil;
 
 import java.io.IOException;
 
@@ -48,6 +49,7 @@ public class RetrofitUtils {
             return retrofit;
         } catch (Exception e) {
             e.printStackTrace();
+            ToastUtil.ToastShow("网络状态错误");
             return null;
         }
 
