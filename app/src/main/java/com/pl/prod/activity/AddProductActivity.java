@@ -1,13 +1,17 @@
 package com.pl.prod.activity;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -15,6 +19,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 
 import com.pl.prod.R;
 import com.pl.prod.app.PlApplication;
@@ -29,8 +34,7 @@ import com.pl.prod.utils.WifiSupport;
 import com.pl.prod.utils.netty.NettyClientFilter;
 import com.pl.prod.utils.netty.NettyClientHandler;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -148,6 +152,49 @@ public class AddProductActivity extends BaseActivity {
 
     private static Thread thread;
 
+    int PERMISSIONS_REQUEST_CODE_ACCESS_COARSE_LOCATION = 1212;
+
+    private void registerPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                    PERMISSIONS_REQUEST_CODE_ACCESS_COARSE_LOCATION);
+        } else {
+            getWifiList();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSIONS_REQUEST_CODE_ACCESS_COARSE_LOCATION) {
+            getWifiList();
+        }
+    }
+
+    public List<ScanResult> getWifiList() {
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        List<ScanResult> scanWifiList = wifiManager.getScanResults();
+        List<ScanResult> wifiList = new ArrayList<>();
+        if (scanWifiList != null && scanWifiList.size() > 0) {
+            HashMap<String, Integer> signalStrength = new HashMap<String, Integer>();
+            for (int i = 0; i < scanWifiList.size(); i++) {
+                ScanResult scanResult = scanWifiList.get(i);
+                if (!scanResult.SSID.isEmpty()) {
+                    String key = scanResult.SSID + " " + scanResult.capabilities;
+                    if (!signalStrength.containsKey(key)) {
+                        signalStrength.put(key, i);
+                        wifiList.add(scanResult);
+                    }
+                }
+            }
+        }
+        Toast.makeText(this, "----> " + wifiList, Toast.LENGTH_LONG).show();
+        return wifiList;
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -157,16 +204,20 @@ public class AddProductActivity extends BaseActivity {
         mWifiAutoConnectManager = WifiAutoConnectManager.newInstance(wifiManager);
         sortScaResult();
 
+        registerPermission();
+
+//        getWifiList();
+
         boolean isNear = false;
         for (int i = 0; i < list.size(); i++) {
             WifiParam wifiInfo = list.get(i);
             if (ssid.equals(wifiInfo.getWifiName())) {
                 ToastUtil.ToastShow("附近有产品，执行自动接入");
+                isNear = true;
 
                 if (ssid.equals(WifiAutoConnectManager.getSSID())) {
                     //已连接`
                     ToastUtil.ToastShow("附近有产品，已经接入产品 wifi");
-                    isNear = true;
                     break;
                 }
                 if (mConnectAsyncTask != null) {
@@ -185,6 +236,7 @@ public class AddProductActivity extends BaseActivity {
         if (!isNear) {
             ToastUtil.ToastShow("附近无产品的 wifi");
         }
+
 
         if (tcpThread == null) {
             tcpThread = new TcpThread();

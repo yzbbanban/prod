@@ -37,6 +37,8 @@ public class PlApplication extends LitePalApplication {
     public static String WIFI="";
     public static String WIFI_SECRET="";
 
+    public static String SSID="";
+
     //使用list來保存每一個activity
     private List<Activity> mList = new LinkedList<Activity>();
     //使用list來保存每一個service

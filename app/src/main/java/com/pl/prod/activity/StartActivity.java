@@ -4,12 +4,17 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Build;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.pl.prod.R;
 import com.pl.prod.app.PlApplication;
@@ -20,12 +25,16 @@ import com.pl.prod.presenter.GetIpTokenPresenterImpl;
 import com.pl.prod.utils.SharedPreUtil;
 import com.pl.prod.utils.SystemUtils;
 import com.pl.prod.utils.ToastUtil;
+import com.tbruyelle.rxpermissions.RxPermissions;
 
 import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import rx.functions.Action1;
+
+import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
 
 public class StartActivity extends AppCompatActivity implements IGetIpContract.View, IIpTokenContract.View {
     private static final String TAG = "StartActivity";
@@ -44,7 +53,7 @@ public class StartActivity extends AppCompatActivity implements IGetIpContract.V
     //获取 ip
     private IGetIpContract.Presenter getIpPresenter;
     private IIpTokenContract.Presenter ipTokenPresenter;
-    private int i = 5;
+    private int i = 10;
 
 
     @Override
@@ -90,80 +99,41 @@ public class StartActivity extends AppCompatActivity implements IGetIpContract.V
 //        finish();
 //    }
 
+
     /**
      * 权限检查
      */
-    @TargetApi(23)
     private void getPersimmions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            ArrayList<String> permissions = new ArrayList<String>();
-            /***
-             * 定位权限为必须权限，用户如果禁止，则每次进入都会申请
-             */
-            // 定位精确位置
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
-            }
-            if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
-            }
-            /*
-             * 读写权限和电话状态权限非必要权限(建议授予)只会申请一次，用户同意或者禁止，只会弹一次
-             */
-            // 读写权限
-            if (addPermission(permissions, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                permissionInfo += "Manifest.permission.WRITE_EXTERNAL_STORAGE Deny \n";
-            }
 
-            //wifi权限
-            if (addPermission(permissions, Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                permissionInfo += "Manifest.permission.ACCESS_COARSE_LOCATION Deny \n";
-            }
-            if (addPermission(permissions, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                permissionInfo += "Manifest.permission.ACCESS_FINE_LOCATION Deny \n";
-            }
-            // 读写权限
-            if (addPermission(permissions, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                permissionInfo += "Manifest.permission.WRITE_EXTERNAL_STORAGE Deny \n";
-            }
-            // 读取电话状态权限
-            if (addPermission(permissions, Manifest.permission.READ_PHONE_STATE)) {
-                permissionInfo += "Manifest.permission.READ_PHONE_STATE Deny \n";
-            }
-            // 读取电话状态权限
-            if (addPermission(permissions, Manifest.permission.CALL_PHONE)) {
-                permissionInfo += "Manifest.permission.READ_PHONE_STATE Deny \n";
-            }
-            //照相权限
-            if (addPermission(permissions, Manifest.permission.CAMERA)) {
-                permissionInfo += "Manifest.permission.WRITE_EXTERNAL_STORAGE Deny \n";
-            }
 
-            if (permissions.size() > 0) {
-                requestPermissions(permissions.toArray(new String[permissions.size()]), SDK_PERMISSION_REQUEST);
-            }
-        }
-    }
-
-    @TargetApi(23)
-    private boolean addPermission(ArrayList<String> permissionsList, String permission) {
-        if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) { // 如果应用没有获得对应权限,则添加到列表中,准备批量申请
-            if (shouldShowRequestPermissionRationale(permission)) {
-                return true;
-            } else {
-                permissionsList.add(permission);
-                return false;
-            }
-
-        } else {
-            return true;
-        }
-    }
-
-    @TargetApi(23)
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        //这个请求事件我写在点击事件里面，
+        //点击button之后RxPermissions会为我们申请运行时权限
+        RxPermissions.getInstance(StartActivity.this)
+                .request(
+                        Manifest.permission.READ_CALENDAR,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_WIFI_STATE,
+                        Manifest.permission.ACCESS_NETWORK_STATE,
+                        Manifest.permission.CHANGE_WIFI_MULTICAST_STATE,
+                        Manifest.permission.CHANGE_WIFI_STATE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_PHONE_STATE,
+                        Manifest.permission.CALL_PHONE,
+                        Manifest.permission.CAMERA
+                )//这里填写所需要的权限
+                .subscribe(new Action1<Boolean>() {
+                    @Override
+                    public void call(Boolean aBoolean) {
+                        if (aBoolean) {//true表示获取权限成功（注意这里在android6.0以下默认为true）
+                            Log.i("permissions", "：获取成功");
+                        } else {
+                            Log.i("permissions", "：获取失败");
+                        }
+                    }
+                });
 
     }
 

@@ -15,6 +15,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public class NettyClientHandler extends SimpleChannelInboundHandler<Object> {
     private static final String TAG = "NettyClientHandler";
 
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         Log.i(TAG, "channelRead0: 客户端接受的消息: " + msg);
@@ -36,6 +37,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<Object> {
                 result[i] = b;
                 i++;
             }
+            PlApplication.SSID = toHexString(result);
             Log.i(TAG, "channelRead0: " + toHexString(result));
             if (Arrays.equals(jwt, closeMsg)) {
                 Toast.makeText(PlApplication.app, "成功", Toast.LENGTH_SHORT).show();

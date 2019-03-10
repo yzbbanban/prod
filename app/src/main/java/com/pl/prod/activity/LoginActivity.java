@@ -1,20 +1,15 @@
 package com.pl.prod.activity;
 
-import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.pl.prod.R;
@@ -29,8 +24,6 @@ import com.pl.prod.ui.CleanEditText;
 import com.pl.prod.utils.SharedPreUtil;
 import com.pl.prod.utils.SystemUtils;
 import com.pl.prod.utils.ToastUtil;
-
-import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -54,10 +47,11 @@ public class LoginActivity extends AppCompatActivity implements ILoginContract.V
     @BindView(R.id.btn_forg_pwd)
     TextView btnForgPwd;
 
+    private SweetAlertDialog pDialog;
+
     private String name;//用户名
     private String password;//密码
     private ILoginContract.Presenter presenter;
-    private SweetAlertDialog pDialog;
 
     private IUpdateContract.Presenter updatePresenter;
 
