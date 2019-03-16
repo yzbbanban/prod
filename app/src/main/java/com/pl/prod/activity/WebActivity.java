@@ -160,7 +160,7 @@ public class WebActivity extends AppCompatActivity implements
     }
 
 
-    private void setWifi() {
+    private void sendTcp() {
         Log.i(TAG, "onResume: " + PlApplication.BASE_SERVER_URL);
 
         try {
@@ -356,7 +356,7 @@ public class WebActivity extends AppCompatActivity implements
         SharedPreUtil.saveApiSp(this, ip, PlApplication.user.getMobile());
         PlApplication.BASE_SERVER_URL = "http://" + ip + ":9095";
         Log.i(TAG, "showIp: " + PlApplication.BASE_SERVER_URL);
-        setWifi();
+        sendTcp();
     }
 
 
@@ -679,7 +679,8 @@ public class WebActivity extends AppCompatActivity implements
             } else if (i == u1.length() + 10) {
                 wifiMsg[i] = (byte) 0x00;
             } else {
-                wifiMsg[i] = (byte) s.charAt(wifiLength - i - 1);
+//                wifiMsg[i] = (byte) s.charAt(wifiLength - i - 1);
+                wifiMsg[i] = (byte) s.charAt(s.length() + i - wifiLength);
             }
 
         }
